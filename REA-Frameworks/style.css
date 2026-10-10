@@ -1,3 +1,24 @@
 .centered-text{
     text-align: center;
 }
+
+body {
+    background-color: #f3f4f6; 
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+    color: #1f2937; 
+    line-height: 1.7; 
+    padding: 40px 20px;
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace; /* Fonte estilo código */
+    color: #a51b26;            /* Cor de destaque para o texto */
+}
+
+pre {
+    background-color: #f4f4f4; /* Fundo cinza claro */
+    border: 1px solid #050505;    /* Borda sutil */
+    border-radius: 5px;        /* Bordas arredondadas */
+    padding: 10px;             /* Espaço interno para o texto não colar na borda */
+    overflow-x: auto;          /* Cria barra de rolagem se o código for muito longo */
+}

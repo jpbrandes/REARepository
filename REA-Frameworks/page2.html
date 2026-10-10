@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frameworks de Programação - 2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<h1>
+
+<p class="centered-text"> Frameworks de programação</p>
+
+<hr>
+</h1>
+
+<h2>Princípio de Hollywood</h2>
+
+<p>
+Esse princípio parte de uma ideia interessante em relação ao desenvolvimento de software. Esse conceito se refere à frase "não nos chame, nós chamaremos você", que se baseia inteiramente em um processo externo que chama o seu código e inverte o papel — seu código é o elemento chamado da operação. Detalhando mais, funciona assim: no modelo de desenvolvimento tradicional, é o meu código que chama o banco de dados e o baixo nível. Agora, quando formos aplicar esse princípio, quem vai ser o operador principal é a estrutura interna do programa, e, quando ela chegar em um problema que ela não sabe resolver, ela chama nosso código customizado. O nome técnico para essa troca de papéis é inversão de controle.
+</p>
+
+<h3>Exemplos práticos</h3>
+
+<ul>
+    <ls><strong>Botão:</strong> um botão na forma tradicional precisaria de um laço de repetição que checasse o tempo todo se ele já foi apertado, o que seria ruim para o processamento da máquina. Já com a inversão de controle, basta criar uma função, e associar o clique do botão ao evento desejado.</ls>
+</ul>
+
+<pre><code>
+// O navegador controla o fluxo do clique.
+botao.addEventListener("click", function() {
+    console.log("O navegador chamou meu código!");
+});
+</code></pre>
+<h2>Resumo final</h2>
+
+<p>Frameworks são estruturas predefinidas usadas para impulsionar a rapidez da engenharia de software. Ao contrário de bibliotecas passivas, eles atuam de forma ativa no controle do fluxo do programa. Contudo, o mau uso de frameworks pode deixar um programa pesado e com carga desnecessária (superengenharia), por isso é fundamental avaliar os reais motivos e a necessidade de seu uso.</p>
+</body>
+</html>
