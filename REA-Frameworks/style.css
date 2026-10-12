@@ -11,14 +11,14 @@ body {
 }
 
 code {
-    font-family: 'Courier New', Courier, monospace; /* Fonte estilo código */
-    color: #a51b26;            /* Cor de destaque para o texto */
+    font-family: 'Courier New', Courier, monospace; 
+    color: #a51b26;           
 }
 
 pre {
-    background-color: #f4f4f4; /* Fundo cinza claro */
-    border: 1px solid #050505;    /* Borda sutil */
-    border-radius: 5px;        /* Bordas arredondadas */
-    padding: 10px;             /* Espaço interno para o texto não colar na borda */
-    overflow-x: auto;          /* Cria barra de rolagem se o código for muito longo */
+    background-color: #f4f4f4; 
+    border: 1px solid #050505;    
+    border-radius: 5px;       
+    padding: 10px;             
+    overflow-x: auto;          
 }
