@@ -57,23 +57,23 @@ function verificarRespostas() {
             if (radios[i].checked) {
                 respondido = true;
                 if (radios[i].value === 'certo') {
-                    feedback.innerHTML = `<span style="color: green; font-weight: bold;">Correto!</span> ${q.justificativaCerto}`;
+                    feedback.innerHTML = `<span class="texto-correto">Correto!</span> ${q.justificativaCerto}`;
                     acertos++;
                 } else {
-                    feedback.innerHTML = `<span style="color: red; font-weight: bold;">Incorreto.</span> ${q.justificativaErro}`;
+                    feedback.innerHTML = `<span class="texto-incorreto">Incorreto.</span> ${q.justificativaErro}`;
                 }
             }
         }
 
         if (!respondido) {
-            feedback.innerHTML = `<span style="color: orange; font-weight: bold;">Por favor, selecione uma alternativa.</span>`;
+            feedback.innerHTML = `<span class="texto-alerta">Por favor, selecione uma alternativa.</span>`;
             todasRespondidas = false;
         }
     });
 
     let resultadoFinal = document.getElementById('resultado-final');
     if (todasRespondidas) {
-        resultadoFinal.innerHTML = `<h3 style="margin-top: 20px; padding: 10px; background-color: #e2e8f0; border-radius: 5px; text-align: center;">Você acertou ${acertos} de ${total} perguntas!</h3>`;
+        resultadoFinal.innerHTML = `<div class="caixa-resultado"><h3>Você acertou ${acertos} de ${total} perguntas!</h3></div>`;
     } else {
         resultadoFinal.innerHTML = "";
     }

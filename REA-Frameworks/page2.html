@@ -60,4 +60,35 @@ botao.addEventListener("click", minhaAcao);
 </div>
 
 </body>
+
+<button id="botao-tema" onclick="alternarTema()" style="position: fixed; top: 20px; right: 20px; padding: 8px 12px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background-color: var(--link-bg); color: var(--text-color); font-weight: bold; z-index: 1000;">
+    Modo Escuro
+</button>
+
+<script>
+
+    function alternarTema() {
+        document.body.classList.toggle('dark-mode');
+        const botao = document.getElementById('botao-tema');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('tema', 'escuro');
+            botao.innerHTML = 'Modo Claro';
+        } else {
+            localStorage.setItem('tema', 'claro');
+            botao.innerHTML = 'Modo Escuro';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const temaSalvo = localStorage.getItem('tema');
+        const botao = document.getElementById('botao-tema');
+        
+        if (temaSalvo === 'escuro') {
+            document.body.classList.add('dark-mode');
+            if (botao) botao.innerHTML = 'Modo Claro';
+        }
+    });
+</script>
+
 </html>
