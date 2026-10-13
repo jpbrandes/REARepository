@@ -3,7 +3,7 @@
     --text-color: #1f2937;
     --pre-bg: #f4f4f4;
     --pre-border: #050505;
-    --code-color: #a51b26;
+    --code-color: #050505;
     --link-bg: #e5e7eb;
     --link-text: #1f2937;
 }
@@ -13,7 +13,7 @@ body.dark-mode {
     --text-color: #f3f4f6;
     --pre-bg: #1e1e1e;       
     --pre-border: #333333;   
-    --code-color: #f87171;
+    --code-color: #f3f4f6;
     --link-bg: #2a2a2a;      
     --link-text: #f3f4f6;
 }
