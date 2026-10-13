@@ -19,22 +19,40 @@
 Esse princípio parte de uma ideia interessante em relação ao desenvolvimento de software. Esse conceito se refere à frase "não nos chame, nós chamaremos você", que se baseia inteiramente em um processo externo que chama o seu código e inverte o papel — seu código é o elemento chamado da operação. Detalhando mais, funciona assim: no modelo de desenvolvimento tradicional, é o meu código que chama o banco de dados e o baixo nível. Agora, quando formos aplicar esse princípio, quem vai ser o operador principal é a estrutura interna do programa, e, quando ela chegar em um problema que ela não sabe resolver, ela chama nosso código customizado. O nome técnico para essa troca de papéis é inversão de controle.
 </p>
 
-<h3>Exemplos práticos</h3>
+<h3>Exemplos práticos: O caso do botão</h3>
+
+<p>Para entender o impacto desse princípio, veja a diferença de como o sistema lida com o clique de um usuário:</p>
 
 <ul>
-    <li><strong>Botão:</strong> um botão na forma tradicional precisaria de um laço de repetição que checasse o tempo todo se ele já foi apertado, o que seria ruim para o processamento da máquina. Já com a inversão de controle, basta criar uma função, e associar o clique do botão ao evento desejado.</li>
+    <li><strong>Sem Inversão de Controle (O seu código no comando):</strong> O programa precisa ficar preso em um loop infinito, checando exaustivamente a cada milissegundo se o botão foi apertado. Isso gasta processamento desnecessário.</li>
 </ul>
 
 <pre><code>
-// O navegador controla o fluxo do clique.
-botao.addEventListener("click", function() {
-    console.log("O navegador chamou meu código!");
-});
+// O seu código fica no comando perguntando sem parar
+while (programaRodando) {
+    if (usuarioClicouNoBotao()) {
+        executarAcao();
+    }
+}
+</code></pre>
+
+<ul>
+    <li><strong>Com Inversão de Controle / Princípio de Hollywood (O sistema no comando):</strong> Você não cria loops de checagem. Você apenas entrega a sua função para o navegador e aguarda. O navegador assume o controle do fluxo e chama o seu código apenas quando o evento realmente acontece.</li>
+</ul>
+
+<pre><code>
+// O seu código apenas define a função que será chamada
+function minhaAcao() {
+    console.log("O navegador chamou meu código após o clique!");
+}
+
+// O navegador controla o fluxo e aciona o seu código no momento certo
+botao.addEventListener("click", minhaAcao);
 </code></pre>
 
 <h2>Resumo final</h2>
 
-<p>Frameworks são estruturas predefinidas usadas para impulsionar a rapidez e eficiência da engenharia de software. Ao contrário de bibliotecas passivas, eles atuam de forma ativa no controle do fluxo do programa. Contudo, o mau uso de frameworks pode deixar um programa pesado e com carga desnecessária (superengenharia), por isso é fundamental avaliar os reais motivos e a necessidade de seu uso.</p>
+<p>Frameworks são estruturas predefinidas usadas para impulsionar a rapidez e eficiência da engenharia de software. Ao contrário de bibliotecas passivas, eles atuam de forma ativa no controle do fluxo do programa. Contudo, o mau uso de frameworks pode deixar um programa pesado e com carga desnecessária (superengenharia), por isso é fundamental avaliar os reais motivos e a necessidade de seu uso. O principal conceito relacionado aos frameworks é a inversão de controle, onde o framework ou a infraestrutura do projeto assume o controle.</p>
 
 <div style="margin-top: 40px; display: flex; gap: 15px;">
     <a href="index.html" class="meu-botao">← Voltar para a página inicial</a>
