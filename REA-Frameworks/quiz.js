@@ -1,6 +1,6 @@
 function verificarRespostas() {
     let acertos = 0;
-    let total = 7;
+    let total = 9; 
     let todasRespondidas = true;
 
     let questoes = [
@@ -45,6 +45,18 @@ function verificarRespostas() {
             feedbackId: 'f7',
             justificativaCerto: "Correto! O backend atua como o mecanismo interno do sistema, lidando com a manipulação e armazenamento de dados do usuário.",
             justificativaErro: "Incorreto. O backend gerencia o mecanismo interno e os dados, enquanto a parte visual/botões fica a cargo do frontend."
+        },
+        {
+            nome: 'p8',
+            feedbackId: 'f8',
+            justificativaCerto: "Correto! A API atua como a ponte de comunicação oficial permitindo que o Frontend e o Backend troquem dados.",
+            justificativaErro: "Incorreto. A comunicação entre as camadas é feita de forma desacoplada através de uma API."
+        },
+        {
+            nome: 'p9',
+            feedbackId: 'f9',
+            justificativaCerto: "Correto! Como as camadas são independentes, você tem total liberdade para combinar diferentes tecnologias de frontend e backend.",
+            justificativaErro: "Incorreto. Os ecossistemas são independentes, permitindo total liberdade de escolha na hora de montar a estrutura do sistema."
         }
     ];
 
