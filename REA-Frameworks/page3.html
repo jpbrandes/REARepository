@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frameworks de Programação - Aplicação Prática (CRUD)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Botão de Modo Escuro -->
+    <button id="botao-tema" onclick="alternarTema()" style="position: fixed; top: 20px; right: 20px; padding: 8px 12px; cursor: pointer; border-radius: 5px; border: 1px solid var(--border-color); background-color: var(--link-bg); color: var(--text-color); font-weight: bold; z-index: 1000;">
+        🌙 Modo Escuro
+    </button>
+
+    <h1>
+        <p class="centered-text">Aplicação Prática: Construindo um CRUD Completo</p>
+        <hr>
+    </h1>
+
+    <h2>Da Teoria à Prática: O Sistema To-Do List</h2>
+    <p>
+        Para consolidar todos os conceitos estudados sobre frameworks, arquitetura de software, runtimes e a separação entre <strong>Frontend</strong> e <strong>Backend</strong>, construímos uma aplicação funcional de Lista de Tarefas. O sistema implementa rigorosamente o modelo arquitetural <strong>CRUD</strong> (Create, Read, Update, Delete), permitindo criar, listar, atualizar e excluir registros de forma totalmente integrada.
+    </p>
+
+    <h2>A Stack Tecnológica Escolhida</h2>
+    <ul>
+        <li><strong>Backend:</strong> Python com o framework <strong>FastAPI</strong>, escolhido pela alta performance e documentação automática de rotas.</li>
+        <li><strong>Banco de Dados:</strong> <strong>SQLite</strong>, um banco relacional leve que gerencia os dados localmente em arquivo único.</li>
+        <li><strong>Frontend:</strong> HTML, CSS e JavaScript puro (Vanilla JS), consumindo a API de forma assíncrona com <code>fetch</code> e gerenciando estados locais e modo escuro dinâmico.</li>
+    </ul>
+
+    <h2>Passo a Passo do Desenvolvimento</h2>
+
+    <h3>Passo 1: Instalação das Dependências</h3>
+    <p>No seu terminal, instale o FastAPI e o Uvicorn (servidor ASGI):</p>
+<pre><code>pip install fastapi uvicorn</code></pre>
+
+    <h3>Passo 2: O Cérebro da Aplicação (O Backend em Python)</h3>
+    <p>O arquivo <code>main.py</code> gerencia o servidor, configura o CORS e estabelece todas as rotas de persistência:</p>
+<pre><code>from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import sqlite3
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+def conectar_db():
+    conn = sqlite3.connect("banco.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def inicializar_db():
+    conn = conectar_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS tarefas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titulo TEXT NOT NULL,
+            concluida BOOLEAN NOT NULL DEFAULT 0
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+inicializar_db()
+
+class Tarefa(BaseModel):
+    titulo: str
+    concluida: bool = False
+
+@app.post("/tarefas")
+def criar_tarefa(tarefa: Tarefa):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO tarefas (titulo, concluida) VALUES (?, ?)", (tarefa.titulo, tarefa.concluida))
+    conn.commit()
+    novo_id = cursor.lastrowid
+    conn.close()
+    return {"id": novo_id, "titulo": tarefa.titulo, "concluida": tarefa.concluida}
+
+@app.get("/tarefas")
+def listar_tarefas():
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tarefas")
+    tarefas = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return tarefas
+
+@app.put("/tarefas/{tarefa_id}")
+def atualizar_tarefa(tarefa_id: int, tarefa: Tarefa):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE tarefas SET titulo = ?, concluida = ? WHERE id = ?", (tarefa.titulo, tarefa.concluida, tarefa_id))
+    conn.commit()
+    conn.close()
+    return {"mensagem": "Tarefa atualizada com sucesso!"}
+
+@app.delete("/tarefas/{tarefa_id}")
+def deletar_tarefa(tarefa_id: int):
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tarefas WHERE id = ?", (tarefa_id,))
+    conn.commit()
+    conn.close()
+    return {"mensagem": "Tarefa deletada com sucesso!"}
+
+@app.delete("/tarefas")
+def deletar_todas_tarefas():
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tarefas")
+    conn.commit()
+    conn.close()
+    return {"mensagem": "Todas as tarefas foram deletadas!"}
+</code></pre>
+
+    <h3>Passo 3: Como Rodar o Servidor Backend</h3>
+    <p>Com o arquivo salvo, ative o servidor local via Uvicorn:</p>
+<pre><code>uvicorn main:app --reload</code></pre>
+
+    <h3>Passo 4: A Interface Visual e Consumo da API (O Frontend Completo)</h3>
+    <p>
+        O código abaixo representa o arquivo <code>index.html</code> completo da aplicação. Ele engloba a estilização responsiva com suporte a modo escuro, os botões de ação global e as funções assíncronas em JavaScript que integram a interface diretamente com a API do FastAPI:
+    </p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;pt-BR&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;ToDoList&lt;/title&gt;
+    &lt;style&gt;
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --success-hover: #15803d;
+            --danger-color: #dc2626;
+            --danger-hover: #b91c1c;
+            --edit-color: #d97706;
+            --edit-hover: #b45309;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f3f4f6;
+            --border-color: #333333;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #22c55e;
+            --success-hover: #16a34a;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --edit-color: #f59e0b;
+            --edit-hover: #d97706;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-adicionar {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-adicionar:hover {
+            background-color: var(--primary-hover);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .tarefa-concluida {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-concluir {
+            background-color: var(--success-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-concluir:hover {
+            background-color: var(--success-hover);
+        }
+
+        .btn-editar {
+            background-color: var(--edit-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-editar:hover {
+            background-color: var(--edit-hover);
+        }
+
+        .btn-excluir {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-excluir:hover {
+            background-color: var(--danger-hover);
+        }
+
+        #botao-tema {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        #botao-limpar-tudo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--danger-color);
+            background-color: var(--danger-color);
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transition: background-color 0.2s;
+        }
+        #botao-limpar-tudo:hover {
+            background-color: var(--danger-hover);
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;button id=&quot;botao-limpar-tudo&quot; onclick=&quot;deletarTodasTarefas()&quot;&gt;Limpar Tudo&lt;/button&gt;
+    &lt;button id=&quot;botao-tema&quot; onclick=&quot;alternarTema()&quot;&gt;Modo Escuro&lt;/button&gt;
+
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;h1&gt;ToDoList&lt;/h1&gt;
+
+        &lt;div class=&quot;input-group&quot;&gt;
+            &lt;input type=&quot;text&quot; id=&quot;novaTarefa&quot; placeholder=&quot;O que você precisa fazer?&quot;&gt;
+            &lt;button class=&quot;btn-adicionar&quot; onclick=&quot;adicionarTarefa()&quot;&gt;Adicionar&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;ul id=&quot;listaTarefas&quot;&gt;&lt;/ul&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        async function carregarTarefas() {
+            const resposta = await fetch('http://127.0.0.1:8000/tarefas');
+            const tarefas = await resposta.json();
+            
+            const lista = document.getElementById('listaTarefas');
+            lista.innerHTML = '';
+            
+            if (tarefas.length === 0) {
+                lista.innerHTML = '&lt;p style=&quot;text-align: center; color: var(--border-color);&quot;&gt;Nenhuma tarefa cadastrada ainda.&lt;/p&gt;';
+                return;
+            }
+
+            tarefas.forEach(t =&gt; {
+                const classeConcluida = t.concluida ? 'tarefa-concluida' : '';
+                const textoBotaoConcluir = t.concluida ? 'Desfazer' : 'Concluir';
+
+                lista.innerHTML += `
+                    &lt;li&gt;
+                        &lt;span class=&quot;${classeConcluida}&quot;&gt;${t.titulo}&lt;/span&gt;
+                        &lt;div class=&quot;acoes&quot;&gt;
+                            &lt;button class=&quot;btn-concluir&quot; onclick=&quot;alternarConcluida(${t.id}, '${t.titulo}', ${t.concluida})&quot;&gt;${textoBotaoConcluir}&lt;/button&gt;
+                            &lt;button class=&quot;btn-editar&quot; onclick=&quot;editarTarefa(${t.id}, '${t.titulo}', ${t.concluida})&quot;&gt;Editar&lt;/button&gt;
+                            &lt;button class=&quot;btn-excluir&quot; onclick=&quot;deletarTarefa(${t.id})&quot;&gt;Excluir&lt;/button&gt;
+                        &lt;/div&gt;
+                    &lt;/li&gt;
+                `;
+            });
+        }
+
+        async function adicionarTarefa() {
+            const input = document.getElementById('novaTarefa');
+            if (!input.value.trim()) return;
+
+            await fetch('http://127.0.0.1:8000/tarefas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: input.value, concluida: false })
+            });
+
+            input.value = '';
+            carregarTarefas();
+        }
+
+        async function alternarConcluida(id, titulo, statusAtual) {
+            const novoStatus = !statusAtual;
+
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: titulo, concluida: novoStatus })
+            });
+
+            carregarTarefas();
+        }
+
+        async function editarTarefa(id, tituloAntigo, statusAtual) {
+            const novoTitulo = prompt("Edite o nome da tarefa:", tituloAntigo);
+            if (novoTitulo === null || !novoTitulo.trim()) return;
+
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: novoTitulo, concluida: statusAtual })
+            });
+
+            carregarTarefas();
+        }
+
+        async function deletarTarefa(id) {
+            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+                await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                    method: 'DELETE'
+                });
+                carregarTarefas();
+            }
+        }
+
+        async function deletarTodasTarefas() {
+            if (confirm("Tem certeza absoluta que deseja apagar TODAS as tarefas?")) {
+                await fetch('http://127.0.0.1:8000/tarefas', {
+                    method: 'DELETE'
+                });
+                carregarTarefas();
+            }
+        }
+
+        function alternarTema() {
+            document.body.classList.toggle('dark-mode');
+            const botao = document.getElementById('botao-tema');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('tema', 'escuro');
+                botao.innerHTML = 'Modo Claro';
+            } else {
+                localStorage.setItem('tema', 'claro');
+                botao.innerHTML = 'Modo Escuro';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () =&gt; {
+            const temaSalvo = localStorage.getItem('tema');
+            const botao = document.getElementById('botao-tema');
+            
+            if (temaSalvo === 'escuro') {
+                document.body.classList.add('dark-mode');
+                if (botao) botao.innerHTML = 'Modo Claro';
+            }
+            carregarTarefas();
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+    <h2>Conclusão da Prática</h2>
+    <p>
+        Com esta estrutura unificada, o REA cumpre perfeitamente o seu papel didático: demonstra a teoria dos frameworks, desacoplamento e arquitetura moderna, e fornece o código real pronto para que qualquer pessoa reproduza o projeto do zero com sucesso!
+    </p>
+
+    <!-- Navegação -->
+    <div style="margin-top: 40px; display: flex; gap: 15px; flex-wrap: wrap;">
+        <a href="quiz.html" class="meu-botao">← Voltar para o Quiz</a>
+        <a href="index.html" class="meu-botao">Voltar para a Página Inicial</a>
+    </div>
+
+    <!-- Script de Modo Escuro Compartilhado da Página -->
+    <script>
+        function alternarTema() {
+            document.body.classList.toggle('dark-mode');
+            const botao = document.getElementById('botao-tema');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('tema', 'escuro');
+                botao.innerHTML = 'Modo Claro';
+            } else {
+                localStorage.setItem('tema', 'claro');
+                botao.innerHTML = 'Modo Escuro';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const temaSalvo = localStorage.getItem('tema');
+            const botao = document.getElementById('botao-tema');
+            
+            if (temaSalvo === 'escuro') {
+                document.body.classList.add('dark-mode');
+                if (botao) botao.innerHTML = 'Modo Claro';
+            }
+        });
+    </script>
+</body>
+</html>
