@@ -115,11 +115,6 @@
             margin-bottom: 10px;
         }
 
-        .tarefa-concluida {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-
         .acoes {
             display: flex;
             gap: 8px;
@@ -221,14 +216,11 @@
             }
 
             tarefas.forEach(t => {
-                const classeConcluida = t.concluida ? 'tarefa-concluida' : '';
-                const textoBotaoConcluir = t.concluida ? 'Desfazer' : 'Concluir';
-
                 lista.innerHTML += `
                     <li>
-                        <span class="${classeConcluida}">${t.titulo}</span>
+                        <span>${t.titulo}</span>
                         <div class="acoes">
-                            <button class="btn-concluir" onclick="alternarConcluida(${t.id}, '${t.titulo}', ${t.concluida})">${textoBotaoConcluir}</button>
+                            <button class="btn-concluir" onclick="deletarTarefa(${t.id})">Concluir</button>
                             <button class="btn-editar" onclick="editarTarefa(${t.id}, '${t.titulo}', ${t.concluida})">Editar</button>
                             <button class="btn-excluir" onclick="deletarTarefa(${t.id})">Excluir</button>
                         </div>
@@ -251,18 +243,6 @@
             carregarTarefas();
         }
 
-        async function alternarConcluida(id, titulo, statusAtual) {
-            const novoStatus = !statusAtual;
-
-            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo: titulo, concluida: novoStatus })
-            });
-
-            carregarTarefas();
-        }
-
         async function editarTarefa(id, tituloAntigo, statusAtual) {
             const novoTitulo = prompt("Edite o nome da tarefa:", tituloAntigo);
             if (novoTitulo === null || !novoTitulo.trim()) return;
@@ -277,15 +257,12 @@
         }
 
         async function deletarTarefa(id) {
-            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
-                await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
-                    method: 'DELETE'
-                });
-                carregarTarefas();
-            }
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'DELETE'
+            });
+            carregarTarefas();
         }
 
-        // Função para apagar todas as tarefas de uma vez
         async function deletarTodasTarefas() {
             if (confirm("Tem certeza absoluta que deseja apagar TODAS as tarefas?")) {
                 await fetch('http://127.0.0.1:8000/tarefas', {

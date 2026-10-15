@@ -18,25 +18,25 @@
         <hr>
     </h1>
 
-    <h2>Da Teoria à Prática: O Sistema To-Do List</h2>
+    <h2>Da teoria à prática: O Sistema To-Do List</h2>
     <p>
         Para consolidar todos os conceitos estudados sobre frameworks, arquitetura de software, runtimes e a separação entre <strong>Frontend</strong> e <strong>Backend</strong>, construímos uma aplicação funcional de Lista de Tarefas. O sistema implementa rigorosamente o modelo arquitetural <strong>CRUD</strong> (Create, Read, Update, Delete), permitindo criar, listar, atualizar e excluir registros de forma totalmente integrada.
     </p>
 
-    <h2>A Stack Tecnológica Escolhida</h2>
+    <h2>A stack tecnológica Escolhida</h2>
     <ul>
         <li><strong>Backend:</strong> Python com o framework <strong>FastAPI</strong>, escolhido pela alta performance e documentação automática de rotas.</li>
         <li><strong>Banco de Dados:</strong> <strong>SQLite</strong>, um banco relacional leve que gerencia os dados localmente em arquivo único.</li>
         <li><strong>Frontend:</strong> HTML, CSS e JavaScript puro (Vanilla JS), consumindo a API de forma assíncrona com <code>fetch</code> e gerenciando estados locais e modo escuro dinâmico.</li>
     </ul>
 
-    <h2>Passo a Passo do Desenvolvimento</h2>
+    <h2>Passo a passo do desenvolvimento</h2>
 
-    <h3>Passo 1: Instalação das Dependências</h3>
-    <p>No seu terminal, instale o FastAPI e o Uvicorn (servidor ASGI):</p>
+    <h3>Passo 1: Instalação das dependências</h3>
+    <p>No seu terminal, instale o FastAPI e o Uvicorn (servidor ASGI), essas duas dependências são usadas com a linguagem Python:</p>
 <pre><code>pip install fastapi uvicorn</code></pre>
 
-    <h3>Passo 2: O Cérebro da Aplicação (O Backend em Python)</h3>
+    <h3>Passo 2: O cérebro da aplicação (O Backend em Python)</h3>
     <p>O arquivo <code>main.py</code> gerencia o servidor, configura o CORS e estabelece todas as rotas de persistência:</p>
 <pre><code>from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -123,11 +123,11 @@ def deletar_todas_tarefas():
     return {"mensagem": "Todas as tarefas foram deletadas!"}
 </code></pre>
 
-    <h3>Passo 3: Como Rodar o Servidor Backend</h3>
+    <h3>Passo 3: Como rodar o servidor backend</h3>
     <p>Com o arquivo salvo, ative o servidor local via Uvicorn:</p>
 <pre><code>uvicorn main:app --reload</code></pre>
 
-    <h3>Passo 4: A Interface Visual e Consumo da API (O Frontend Completo)</h3>
+    <h3>Passo 4: A interface visual e consumo da API (O Frontend Completo)</h3>
     <p>
         O código abaixo representa o arquivo <code>index.html</code> completo da aplicação. Ele engloba a estilização responsiva com suporte a modo escuro, os botões de ação global e as funções assíncronas em JavaScript que integram a interface diretamente com a API do FastAPI:
     </p>
@@ -248,11 +248,6 @@ def deletar_todas_tarefas():
             margin-bottom: 10px;
         }
 
-        .tarefa-concluida {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-
         .acoes {
             display: flex;
             gap: 8px;
@@ -351,14 +346,11 @@ def deletar_todas_tarefas():
             }
 
             tarefas.forEach(t =&gt; {
-                const classeConcluida = t.concluida ? 'tarefa-concluida' : '';
-                const textoBotaoConcluir = t.concluida ? 'Desfazer' : 'Concluir';
-
                 lista.innerHTML += `
                     &lt;li&gt;
-                        &lt;span class=&quot;${classeConcluida}&quot;&gt;${t.titulo}&lt;/span&gt;
+                        &lt;span&gt;${t.titulo}&lt;/span&gt;
                         &lt;div class=&quot;acoes&quot;&gt;
-                            &lt;button class=&quot;btn-concluir&quot; onclick=&quot;alternarConcluida(${t.id}, '${t.titulo}', ${t.concluida})&quot;&gt;${textoBotaoConcluir}&lt;/button&gt;
+                            &lt;button class=&quot;btn-concluir&quot; onclick=&quot;deletarTarefa(${t.id})&quot;&gt;Concluir&lt;/button&gt;
                             &lt;button class=&quot;btn-editar&quot; onclick=&quot;editarTarefa(${t.id}, '${t.titulo}', ${t.concluida})&quot;&gt;Editar&lt;/button&gt;
                             &lt;button class=&quot;btn-excluir&quot; onclick=&quot;deletarTarefa(${t.id})&quot;&gt;Excluir&lt;/button&gt;
                         &lt;/div&gt;
@@ -381,18 +373,6 @@ def deletar_todas_tarefas():
             carregarTarefas();
         }
 
-        async function alternarConcluida(id, titulo, statusAtual) {
-            const novoStatus = !statusAtual;
-
-            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo: titulo, concluida: novoStatus })
-            });
-
-            carregarTarefas();
-        }
-
         async function editarTarefa(id, tituloAntigo, statusAtual) {
             const novoTitulo = prompt("Edite o nome da tarefa:", tituloAntigo);
             if (novoTitulo === null || !novoTitulo.trim()) return;
@@ -407,12 +387,10 @@ def deletar_todas_tarefas():
         }
 
         async function deletarTarefa(id) {
-            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
-                await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
-                    method: 'DELETE'
-                });
-                carregarTarefas();
-            }
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'DELETE'
+            });
+            carregarTarefas();
         }
 
         async function deletarTodasTarefas() {
@@ -451,7 +429,7 @@ def deletar_todas_tarefas():
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
 
-    <h2>Conclusão da Prática</h2>
+    <h2>Conclusão da prática</h2>
     <p>
         Com esta estrutura unificada, o REA cumpre perfeitamente o seu papel didático: demonstra a teoria dos frameworks, desacoplamento e arquitetura moderna, e fornece o código real pronto para que qualquer pessoa reproduza o projeto do zero com sucesso!
     </p>
