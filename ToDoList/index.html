@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Lista de Tarefas - CRUD</title>
+    <title>ToDoList</title>
     <style>
         :root {
             --bg-color: #f3f4f6;
@@ -12,6 +12,8 @@
             --border-color: #d1d5db;
             --primary-color: #2563eb;
             --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --success-hover: #15803d;
             --danger-color: #dc2626;
             --danger-hover: #b91c1c;
             --edit-color: #d97706;
@@ -25,6 +27,8 @@
             --border-color: #333333;
             --primary-color: #3b82f6;
             --primary-hover: #2563eb;
+            --success-color: #22c55e;
+            --success-hover: #16a34a;
             --danger-color: #ef4444;
             --danger-hover: #dc2626;
             --edit-color: #f59e0b;
@@ -111,9 +115,24 @@
             margin-bottom: 10px;
         }
 
+        .tarefa-concluida {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
         .acoes {
             display: flex;
             gap: 8px;
+        }
+
+        .btn-concluir {
+            background-color: var(--success-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-concluir:hover {
+            background-color: var(--success-hover);
         }
 
         .btn-editar {
@@ -136,7 +155,7 @@
             background-color: var(--danger-hover);
         }
 
-        /* Botão do Modo Escuro Flutuante */
+        /* Botão do Modo Escuro (Canto Superior Direito) */
         #botao-tema {
             position: fixed;
             top: 20px;
@@ -150,28 +169,45 @@
             font-weight: bold;
             z-index: 1000;
         }
+
+        /* Botão de Limpar Tudo (Canto Superior Esquerdo) */
+        #botao-limpar-tudo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--danger-color);
+            background-color: var(--danger-color);
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transition: background-color 0.2s;
+        }
+        #botao-limpar-tudo:hover {
+            background-color: var(--danger-hover);
+        }
     </style>
 </head>
 <body>
 
-    <!-- Botão de Modo Escuro -->
+    <!-- Botões Flutuantes -->
+    <button id="botao-limpar-tudo" onclick="deletarTodasTarefas()">Limpar Tudo</button>
     <button id="botao-tema" onclick="alternarTema()">Modo Escuro</button>
 
     <div class="container">
         <h1>ToDoList</h1>
 
-        <!-- Formulário para Criar (Create) -->
         <div class="input-group">
             <input type="text" id="novaTarefa" placeholder="O que você precisa fazer?">
             <button class="btn-adicionar" onclick="adicionarTarefa()">Adicionar</button>
         </div>
 
-        <!-- Lista para Ler (Read) -->
         <ul id="listaTarefas"></ul>
     </div>
 
     <script>
-        // Função para carregar as tarefas do Backend (READ)
         async function carregarTarefas() {
             const resposta = await fetch('http://127.0.0.1:8000/tarefas');
             const tarefas = await resposta.json();
@@ -185,11 +221,15 @@
             }
 
             tarefas.forEach(t => {
+                const classeConcluida = t.concluida ? 'tarefa-concluida' : '';
+                const textoBotaoConcluir = t.concluida ? 'Desfazer' : 'Concluir';
+
                 lista.innerHTML += `
                     <li>
-                        <span>${t.titulo}</span>
+                        <span class="${classeConcluida}">${t.titulo}</span>
                         <div class="acoes">
-                            <button class="btn-editar" onclick="editarTarefa(${t.id}, '${t.titulo}')">Editar</button>
+                            <button class="btn-concluir" onclick="alternarConcluida(${t.id}, '${t.titulo}', ${t.concluida})">${textoBotaoConcluir}</button>
+                            <button class="btn-editar" onclick="editarTarefa(${t.id}, '${t.titulo}', ${t.concluida})">Editar</button>
                             <button class="btn-excluir" onclick="deletarTarefa(${t.id})">Excluir</button>
                         </div>
                     </li>
@@ -197,7 +237,6 @@
             });
         }
 
-        // Função para enviar uma nova tarefa para o Backend (CREATE)
         async function adicionarTarefa() {
             const input = document.getElementById('novaTarefa');
             if (!input.value.trim()) return;
@@ -212,21 +251,31 @@
             carregarTarefas();
         }
 
-        // Função para editar/renomear uma tarefa (UPDATE)
-        async function editarTarefa(id, tituloAntigo) {
+        async function alternarConcluida(id, titulo, statusAtual) {
+            const novoStatus = !statusAtual;
+
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: titulo, concluida: novoStatus })
+            });
+
+            carregarTarefas();
+        }
+
+        async function editarTarefa(id, tituloAntigo, statusAtual) {
             const novoTitulo = prompt("Edite o nome da tarefa:", tituloAntigo);
             if (novoTitulo === null || !novoTitulo.trim()) return;
 
             await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo: novoTitulo, concluida: false })
+                body: JSON.stringify({ titulo: novoTitulo, concluida: statusAtual })
             });
 
             carregarTarefas();
         }
 
-        // Função para apagar uma tarefa (DELETE)
         async function deletarTarefa(id) {
             if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
                 await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
@@ -236,7 +285,16 @@
             }
         }
 
-        // Lógica do Modo Escuro com LocalStorage
+        // Função para apagar todas as tarefas de uma vez
+        async function deletarTodasTarefas() {
+            if (confirm("Tem certeza absoluta que deseja apagar TODAS as tarefas?")) {
+                await fetch('http://127.0.0.1:8000/tarefas', {
+                    method: 'DELETE'
+                });
+                carregarTarefas();
+            }
+        }
+
         function alternarTema() {
             document.body.classList.toggle('dark-mode');
             const botao = document.getElementById('botao-tema');

@@ -5,7 +5,6 @@ import sqlite3
 
 app = FastAPI()
 
-# Configuração do CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,7 +36,6 @@ class Tarefa(BaseModel):
     titulo: str
     concluida: bool = False
 
-# 1. CREATE
 @app.post("/tarefas")
 def criar_tarefa(tarefa: Tarefa):
     conn = conectar_db()
@@ -48,7 +46,6 @@ def criar_tarefa(tarefa: Tarefa):
     conn.close()
     return {"id": novo_id, "titulo": tarefa.titulo, "concluida": tarefa.concluida}
 
-# 2. READ
 @app.get("/tarefas")
 def listar_tarefas():
     conn = conectar_db()
@@ -58,7 +55,6 @@ def listar_tarefas():
     conn.close()
     return tarefas
 
-# 3. UPDATE
 @app.put("/tarefas/{tarefa_id}")
 def atualizar_tarefa(tarefa_id: int, tarefa: Tarefa):
     conn = conectar_db()
@@ -68,7 +64,6 @@ def atualizar_tarefa(tarefa_id: int, tarefa: Tarefa):
     conn.close()
     return {"mensagem": "Tarefa atualizada com sucesso!"}
 
-# 4. DELETE
 @app.delete("/tarefas/{tarefa_id}")
 def deletar_tarefa(tarefa_id: int):
     conn = conectar_db()
@@ -77,3 +72,13 @@ def deletar_tarefa(tarefa_id: int):
     conn.commit()
     conn.close()
     return {"mensagem": "Tarefa deletada com sucesso!"}
+
+# 5. DELETE ALL (Apagar todas as Tarefas)
+@app.delete("/tarefas")
+def deletar_todas_tarefas():
+    conn = conectar_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tarefas")
+    conn.commit()
+    conn.close()
+    return {"mensagem": "Todas as tarefas foram deletadas com sucesso!"}
