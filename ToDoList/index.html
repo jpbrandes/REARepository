@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Lista de Tarefas - CRUD</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger-color: #dc2626;
+            --danger-hover: #b91c1c;
+            --edit-color: #d97706;
+            --edit-hover: #b45309;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f3f4f6;
+            --border-color: #333333;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --edit-color: #f59e0b;
+            --edit-hover: #d97706;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            padding: 10px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-adicionar {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-adicionar:hover {
+            background-color: var(--primary-hover);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-editar {
+            background-color: var(--edit-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-editar:hover {
+            background-color: var(--edit-hover);
+        }
+
+        .btn-excluir {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        .btn-excluir:hover {
+            background-color: var(--danger-hover);
+        }
+
+        /* Botão do Modo Escuro Flutuante */
+        #botao-tema {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-weight: bold;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botão de Modo Escuro -->
+    <button id="botao-tema" onclick="alternarTema()">Modo Escuro</button>
+
+    <div class="container">
+        <h1>ToDoList</h1>
+
+        <!-- Formulário para Criar (Create) -->
+        <div class="input-group">
+            <input type="text" id="novaTarefa" placeholder="O que você precisa fazer?">
+            <button class="btn-adicionar" onclick="adicionarTarefa()">Adicionar</button>
+        </div>
+
+        <!-- Lista para Ler (Read) -->
+        <ul id="listaTarefas"></ul>
+    </div>
+
+    <script>
+        // Função para carregar as tarefas do Backend (READ)
+        async function carregarTarefas() {
+            const resposta = await fetch('http://127.0.0.1:8000/tarefas');
+            const tarefas = await resposta.json();
+            
+            const lista = document.getElementById('listaTarefas');
+            lista.innerHTML = '';
+            
+            if (tarefas.length === 0) {
+                lista.innerHTML = '<p style="text-align: center; color: var(--border-color);">Nenhuma tarefa cadastrada ainda.</p>';
+                return;
+            }
+
+            tarefas.forEach(t => {
+                lista.innerHTML += `
+                    <li>
+                        <span>${t.titulo}</span>
+                        <div class="acoes">
+                            <button class="btn-editar" onclick="editarTarefa(${t.id}, '${t.titulo}')">Editar</button>
+                            <button class="btn-excluir" onclick="deletarTarefa(${t.id})">Excluir</button>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        // Função para enviar uma nova tarefa para o Backend (CREATE)
+        async function adicionarTarefa() {
+            const input = document.getElementById('novaTarefa');
+            if (!input.value.trim()) return;
+
+            await fetch('http://127.0.0.1:8000/tarefas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: input.value, concluida: false })
+            });
+
+            input.value = '';
+            carregarTarefas();
+        }
+
+        // Função para editar/renomear uma tarefa (UPDATE)
+        async function editarTarefa(id, tituloAntigo) {
+            const novoTitulo = prompt("Edite o nome da tarefa:", tituloAntigo);
+            if (novoTitulo === null || !novoTitulo.trim()) return;
+
+            await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo: novoTitulo, concluida: false })
+            });
+
+            carregarTarefas();
+        }
+
+        // Função para apagar uma tarefa (DELETE)
+        async function deletarTarefa(id) {
+            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+                await fetch(`http://127.0.0.1:8000/tarefas/${id}`, {
+                    method: 'DELETE'
+                });
+                carregarTarefas();
+            }
+        }
+
+        // Lógica do Modo Escuro com LocalStorage
+        function alternarTema() {
+            document.body.classList.toggle('dark-mode');
+            const botao = document.getElementById('botao-tema');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('tema', 'escuro');
+                botao.innerHTML = 'Modo Claro';
+            } else {
+                localStorage.setItem('tema', 'claro');
+                botao.innerHTML = 'Modo Escuro';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const temaSalvo = localStorage.getItem('tema');
+            const botao = document.getElementById('botao-tema');
+            
+            if (temaSalvo === 'escuro') {
+                document.body.classList.add('dark-mode');
+                if (botao) botao.innerHTML = 'Modo Claro';
+            }
+            carregarTarefas();
+        });
+    </script>
+
+</body>
+</html>
