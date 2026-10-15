@@ -1,0 +1,8 @@
+# Ignorar arquivos temporários do Python e cache
+__pycache__/
+*.pyc
+
+# Ignorar o arquivo do banco de dados SQLite local
+banco
+banco.db
+*.db
